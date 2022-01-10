@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import django
 from django.conf import settings
-import urllib.parse.quote as urlquote
+from urllib.parse import quote as urlquote
 from django.utils.encoding import force_str
 from django.shortcuts import redirect, resolve_url
 from django.contrib.auth import REDIRECT_FIELD_NAME
