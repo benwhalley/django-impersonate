@@ -5,7 +5,7 @@
 django-impersonate |nlshield|
 ==============================
 :Info: Simple application to allow superusers to "impersonate" other non-superuser accounts.
-:Version: 1.5
+:Version: 1.5.1
 :Author: Peter Sanchez (http://www.petersanchez.com)
 
 Python / Django Support
@@ -182,7 +182,7 @@ the session.
 Settings
 ========
 
-The following settings are available for django-impersonate. All settings should be 
+The following settings are available for django-impersonate. All settings should be
 set as variables in a dictionary assigned to the attribute named ``IMPERSONATE``.
 
 For example::

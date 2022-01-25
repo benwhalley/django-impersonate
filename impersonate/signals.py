@@ -19,20 +19,21 @@ session_end = Signal()
 
 def gen_unique_id():
     return hashlib.sha1(
-        u'{0}:{1}'.format(get_random_string(), tz_now()).encode('utf-8')
+        u'{0}:{1}'.format(get_random_string(10), tz_now()).encode('utf-8')
     ).hexdigest()
 
 
 @receiver(session_begin, dispatch_uid='impersonate.signals.on_session_begin')
 def on_session_begin(sender, **kwargs):
-    ''' Create a new ImpersonationLog object.
-    '''
+    '''Create a new ImpersonationLog object.'''
     impersonator = kwargs.get('impersonator')
     impersonating = kwargs.get('impersonating')
-    logger.info(u'{0} has started impersonating {1}.'.format(
-        impersonator,
-        impersonating,
-    ))
+    logger.info(
+        u'{0} has started impersonating {1}.'.format(
+            impersonator,
+            impersonating,
+        )
+    )
 
     if settings.DISABLE_LOGGING:
         return
@@ -44,28 +45,29 @@ def on_session_begin(sender, **kwargs):
         impersonator=impersonator,
         impersonating=impersonating,
         session_key=session_key,
-        session_started_at=tz_now()
+        session_started_at=tz_now(),
     )
 
     request.session['_impersonate_session_id'] = session_key
     request.session.modified = True
 
 
-
 @receiver(session_end, dispatch_uid='impersonate.signals.on_session_end')
 def on_session_end(sender, **kwargs):
-    ''' Update ImpersonationLog with the end timestamp.
+    '''Update ImpersonationLog with the end timestamp.
 
-        This uses the combination of session_key, impersonator and
-        user being impersonated to look up the corresponding
-        impersonation log object.
+    This uses the combination of session_key, impersonator and
+    user being impersonated to look up the corresponding
+    impersonation log object.
     '''
     impersonator = kwargs.get('impersonator')
     impersonating = kwargs.get('impersonating')
-    logger.info(u'{0} has finished impersonating {1}.'.format(
-        impersonator,
-        impersonating,
-    ))
+    logger.info(
+        u'{0} has finished impersonating {1}.'.format(
+            impersonator,
+            impersonating,
+        )
+    )
 
     if settings.DISABLE_LOGGING:
         return
@@ -76,30 +78,34 @@ def on_session_end(sender, **kwargs):
     try:
         # look for unfinished sessions that match impersonator / subject
         log = ImpersonationLog.objects.get(
-                impersonator=impersonator,
-                impersonating=impersonating,
-                session_key=session_key,
-                session_ended_at__isnull=True,
+            impersonator=impersonator,
+            impersonating=impersonating,
+            session_key=session_key,
+            session_ended_at__isnull=True,
         )
         log.session_ended_at = tz_now()
         log.save()
     except ImpersonationLog.DoesNotExist:
         logger.warning(
-            (u'Unfinished ImpersonationLog could not be found for: '
-             u'{0}, {1}, {2}').format(
-                 impersonator,
-                 impersonating,
-                 session_key,
-             )
+            (
+                u'Unfinished ImpersonationLog could not be found for: '
+                u'{0}, {1}, {2}'
+            ).format(
+                impersonator,
+                impersonating,
+                session_key,
+            )
         )
     except ImpersonationLog.MultipleObjectsReturned:
         logger.warning(
-            (u'Multiple unfinished ImpersonationLog matching: '
-             u'{0}, {1}, {2}').format(
-                 impersonator,
-                 impersonating,
-                 session_key,
-             )
+            (
+                u'Multiple unfinished ImpersonationLog matching: '
+                u'{0}, {1}, {2}'
+            ).format(
+                impersonator,
+                impersonating,
+                session_key,
+            )
         )
 
     del request.session['_impersonate_session_id']
